@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Rotonde Client</title>
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1><img style="width: 50px;" src="images/rotonde.svg">Rotonde</h1>
+      <div id="input">
+        <input id="portal" type="text" placeholder="Enter your portal">
+        <button id="retrieve" type="button">Retrieve</button>
+      </div>
+      <div id="timeline">
+      </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js" onload="window.$ = window.jQuery = module.exports;"></script>
+
+    <script type="text/javascript">
+
+    /*
+
+    This is super hacky code, souped together to get a proof-of-concept
+    going. This was made so that individuals can use Rotonde on their
+    own machines.
+
+    */
+
+    var feed = {}
+
+    $('#retrieve').click(getLinkJSON)
+
+    function getLinkJSON() {
+      var url = 'http://rotonde.brennan.pizza/'
+      $.get(url).done(grabFeedLinks)
+    }
+
+    function grabFeedLinks(res) {
+      var response = JSON.parse(res)
+      var portals = response.portal
+      grabFeeds(portals)
+    }
+
+    function grabFeeds(array) {
+      if (array.length > 0) {
+        var url = 'http://' + array.shift()
+        $.get(url).done(function(res) {
+          var json
+          if (typeof res == "string") {
+            json = JSON.parse(res)
+          } else {
+            json = res
+          }
+          feed[url] = json.feed
+          grabFeeds(array)
+        })
+      } else {
+        sortFeeds()
+      }
+    }
+
+    // assume that they will always be single nested
+    function sortFeeds() {
+      var mapped = []
+      for (name in feed) {
+        var thisFeed = feed[name]
+        for (var i = 0; i < thisFeed.length; i++) {
+          thisFeed[i].author = name
+          mapped.push(thisFeed[i])
+        }
+      }
+
+      // var sorted = []
+      // for (var i = 0; i < mapped.length; i++) {
+      //   var inner = mapped[i]
+      //   for (var j = 0; j < inner.length; j++) {
+      //     sorted.push(inner[j])
+      //   }
+      // }
+
+      mapped.sort(function(a, b) {
+        return a.time - b.time
+      })
+
+      buildTimeline(mapped)
+    }
+
+    function buildTimeline(array) {
+      // clear timeline
+      var timeline = document.querySelector('#timeline')
+      while(timeline.hasChildNodes()) {
+        timeline.removeChild(timeline.lastChild)
+      }
+
+      // build
+      for (var i = 0; i < array.length; i++) {
+        var newEntry = entry(array[i])
+        timeline.appendChild(newEntry)
+      }
+    }
+
+    function entry(obj) {
+      var entry = document.createElement('div')
+      entry.className = 'entry'
+
+      var author = document.createElement('div')
+      author.className = 'author'
+      author.innerText = obj.author
+
+      var time = document.createElement('div')
+      time.className = 'time'
+      var date = new Date(0)
+      date.setUTCSeconds(obj.time) // !
+      time.innerText = date
+
+      var text = document.createElement('div')
+      if (obj.text) {
+        text.className = 'text'
+        text.innerText = obj.text
+      }
+
+      var link = document.createElement('div')
+      if (obj.url) {
+        var atag = document.createElement('a')
+        atag.innerText = 'LINK'
+        atag.target = 'blank'
+        atag.href = obj.url
+        link.appendChild(atag)
+      }
+
+      var media = document.createElement('div')
+      if (obj.media) {
+        var atag = document.createElement('a')
+        atag.innerText = 'MEDIA'
+        atag.target = 'blank'
+        atag.href = obj.media
+        media.appendChild(atag)
+      }
+
+      //
+      entry.appendChild(author)
+      entry.appendChild(time)
+      entry.appendChild(text)
+      entry.appendChild(link)
+      entry.appendChild(media)
+
+      return entry
+    }
+
+    </script>
+  </body>
+</html>
