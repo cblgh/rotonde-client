@@ -1,0 +1,21 @@
+{
+  "name": "rotonde-client",
+  "version": "0.0.1",
+  "description": "A minimal Electron application for Rotonde",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-packager . RotondeClient --platform=darwin --arch=x64"
+  },
+  "repository": "",
+  "author": "John Akers",
+  "devDependencies": {
+    "electron": "~1.6.2"
+  },
+  "build": {
+    "appId": "rotonde.client.johnakers",
+    "mac": {
+      "category": "specific"
+    }
+  }
+}

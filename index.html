@@ -34,7 +34,7 @@
     $('#retrieve').click(getLinkJSON)
 
     function getLinkJSON() {
-      var url = 'http://rotonde.brennan.pizza/'
+      var url = document.querySelector('#portal').value
       $.get(url).done(grabFeedLinks)
     }
 
@@ -72,14 +72,6 @@
           mapped.push(thisFeed[i])
         }
       }
-
-      // var sorted = []
-      // for (var i = 0; i < mapped.length; i++) {
-      //   var inner = mapped[i]
-      //   for (var j = 0; j < inner.length; j++) {
-      //     sorted.push(inner[j])
-      //   }
-      // }
 
       mapped.sort(function(a, b) {
         return a.time - b.time
